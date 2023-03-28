@@ -1,0 +1,1 @@
+# Bitget_Strategy_Weekly
