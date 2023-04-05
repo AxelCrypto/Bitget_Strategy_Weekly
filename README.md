@@ -9,7 +9,7 @@ Initial wallet: 1000.0 $
 Final wallet: 56723.64 $
 Performance vs US dollar: 5572.36 %
 Sharpe Ratio: 1.41
-Worst Drawdown T|D: -71.4% | -71.49%
+Worst Drawdown compared to ATH: -71.4% | -71.49%
 Buy and hold performance: 319.28 %
 Performance vs buy and hold: 1252.87 %
 Total trades on the period: 116
