@@ -98,27 +98,27 @@ def btc():
 # Trading actions
 def open_long(row):
 
-    if row['ehma_30'] > row['ehma_30_1'] & row['ehma_120'] > row['ehma_120_1']:
+    if row['ehma_30'] > row['ehma_30_1'] and row['ehma_120'] > row['ehma_120_1']:
         return True
     else:
         return False
 
 
 def close_long(row):
-    if row['ehma_30'] < row['ehma_30_1'] | row['ehma_120'] < row['ehma_120_1']:
+    if row['ehma_30'] < row['ehma_30_1'] or row['ehma_120'] < row['ehma_120_1']:
         return True
     else:
         return False
 
 def open_short(row):
-    if row['ehma_30'] < row['ehma_30_1'] & row['ehma_120'] < row['ehma_120_1']:
+    if row['ehma_30'] < row['ehma_30_1'] and row['ehma_120'] < row['ehma_120_1']:
         return True
     else:
         return False
 
 
 def close_short(row):
-    if row['ehma_30'] > row['ehma_30_1'] | row['ehma_120'] > row['ehma_120_1']:
+    if row['ehma_30'] > row['ehma_30_1'] or row['ehma_120'] > row['ehma_120_1']:
         return True
     else:
         return False
@@ -190,7 +190,7 @@ if len(position) > 0:
             bitget.place_market_order(pair, "buy", close_short_quantity, reduce=True)
 
         long_market_price = float(df.iloc[-1]["close"])
-        long_quantity_in_usd = usd_balance leverage_short
+        long_quantity_in_usd = usd_balance * leverage_short
         long_quantity = float(bitget.convert_amount_to_precision(pair, float(
             bitget.convert_amount_to_precision(pair, long_quantity_in_usd / long_market_price)
         )))
