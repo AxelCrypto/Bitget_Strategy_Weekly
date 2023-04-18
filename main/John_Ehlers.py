@@ -1,4 +1,3 @@
-#import ta
 import pandas as pd
 from perp_bitget import PerpBitget
 import ccxt
@@ -26,9 +25,12 @@ production = True
 
 pair = "BTC/USDT:USDT"
 timeframe = "1d"
-leverage = 2
+leverage_long = 2
+leverage_short = 1
 
-print(f"--- {pair} {timeframe} Leverage x {leverage} ---")
+print(f"--- {pair} {timeframe} Leverage Long x {leverage_long} ---")
+print(f"--- {pair} {timeframe} Leverage Short x {leverage_short} ---")
+
 
 type = ["long", "short"]
 
@@ -61,11 +63,13 @@ def btc():
 
     df.drop_duplicates(inplace = True)
 
-    # Add indicator
-    period = 30
-    sqrt_period = np.sqrt(period)
+    period_1 = 30
+    period_2 = 120
 
-    def John_Ehlers(x, y):
+    sqrt_period_30 = np.sqrt(period_1)
+    sqrt_period_120 = np.sqrt(period_2)
+
+    def John(x, y):
         alpha = 2 / (y + 1)
         sum = np.zeros(len(x))
         sum[0] = alpha * x[0]
@@ -73,39 +77,48 @@ def btc():
             sum[i] = alpha * x[i] + (1 - alpha) * sum[i-1]
         return sum
 
-    close_ema1 = John_Ehlers(df['close'], int(period / 2))
-    close_ema2 = John_Ehlers(df['close'], period)
-    ehma = John_Ehlers(2 * close_ema1 - close_ema2, sqrt_period)
+    close_ema1_30 = John(df['close'], int(period_1 / 2))
+    close_ema2_30 = John(df['close'], period_1)
+    ehma_30 = John(2 * close_ema1_30 - close_ema2_30, sqrt_period_30)
 
-    df['ehma'] =ehma
-    df['ehma_1'] = df['ehma'].shift(1)
+    df['ehma_30'] = ehma_30
+    df['ehma_30_1'] = df['ehma_30'].shift(1)
+
+
+    close_ema1_120 = John(df['close'], int(period_2 / 2))
+    close_ema2_120 = John(df['close'], period_2)
+    ehma_120 = John(2 * close_ema1_120 - close_ema2_120, sqrt_period_120)
+
+    df['ehma_120'] = ehma_120
+    df['ehma_120_1'] = df['ehma_120'].shift(1)
 
     return df
 
 
 # Trading actions
 def open_long(row):
-    if row['ehma'] > row['ehma_1']:
+
+    if row['ehma_30'] > row['ehma_30_1'] & row['ehma_120'] > row['ehma_120_1']:
         return True
     else:
         return False
 
 
 def close_long(row):
-    if row['ehma'] < row['ehma_1']:
+    if row['ehma_30'] < row['ehma_30_1'] | row['ehma_120'] < row['ehma_120_1']:
         return True
     else:
         return False
 
 def open_short(row):
-    if row['ehma'] < row['ehma_1']:
+    if row['ehma_30'] < row['ehma_30_1'] & row['ehma_120'] < row['ehma_120_1']:
         return True
     else:
         return False
 
 
 def close_short(row):
-    if row['ehma'] > row['ehma_1']:
+    if row['ehma_30'] > row['ehma_30_1'] | row['ehma_120'] > row['ehma_120_1']:
         return True
     else:
         return False
@@ -151,7 +164,7 @@ if len(position) > 0:
             bitget.place_market_order(pair, "sell", close_long_quantity, reduce=True)
 
         short_market_price = float(df.iloc[-1]["close"])
-        short_quantity_in_usd = usd_balance * 1
+        short_quantity_in_usd = usd_balance * leverage_long
         short_quantity = float(bitget.convert_amount_to_precision(pair, float(
             bitget.convert_amount_to_precision(pair, short_quantity_in_usd / short_market_price)
         )))
@@ -177,7 +190,7 @@ if len(position) > 0:
             bitget.place_market_order(pair, "buy", close_short_quantity, reduce=True)
 
         long_market_price = float(df.iloc[-1]["close"])
-        long_quantity_in_usd = usd_balance * leverage
+        long_quantity_in_usd = usd_balance leverage_short
         long_quantity = float(bitget.convert_amount_to_precision(pair, float(
             bitget.convert_amount_to_precision(pair, long_quantity_in_usd / long_market_price)
         )))
@@ -193,7 +206,7 @@ else:
     print("No active position")
     if open_long(row) and "long" in type:
         long_market_price = float(df.iloc[-1]["close"])
-        long_quantity_in_usd = usd_balance * leverage
+        long_quantity_in_usd = usd_balance * leverage_long
         long_quantity = float(bitget.convert_amount_to_precision(pair, float(
             bitget.convert_amount_to_precision(pair, long_quantity_in_usd / long_market_price)
         )))
@@ -206,7 +219,7 @@ else:
 
     elif open_short(row) and "short" in type:
         short_market_price = float(df.iloc[-1]["close"])
-        short_quantity_in_usd = usd_balance * 1
+        short_quantity_in_usd = usd_balance * leverage_short
         short_quantity = float(bitget.convert_amount_to_precision(pair, float(
             bitget.convert_amount_to_precision(pair, short_quantity_in_usd / short_market_price)
         )))
