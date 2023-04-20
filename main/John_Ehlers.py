@@ -32,7 +32,7 @@ print(f"--- {pair} {timeframe} Leverage Long x {leverage_long} ---")
 print(f"--- {pair} {timeframe} Leverage Short x {leverage_short} ---")
 
 
-type = ["long", "short"]
+order_type = ["long", "short"]
 
 
 def btc():
@@ -163,17 +163,6 @@ if len(position) > 0:
         if production:
             bitget.place_market_order(pair, "sell", close_long_quantity, reduce=True)
 
-        short_market_price = float(df.iloc[-1]["close"])
-        short_quantity_in_usd = usd_balance * leverage_long
-        short_quantity = float(bitget.convert_amount_to_precision(pair, float(
-            bitget.convert_amount_to_precision(pair, short_quantity_in_usd / short_market_price)
-        )))
-        exchange_short_quantity = short_quantity * short_market_price
-        print(
-            f"Place Open Short Market Order: {short_quantity} {pair[:-5]} at the price of {short_market_price}$ ~{round(exchange_short_quantity, 2)}$"
-        )
-        if production:
-            bitget.place_market_order(pair, "sell", short_quantity, reduce=False)
 
 
 
@@ -189,22 +178,11 @@ if len(position) > 0:
         if production:
             bitget.place_market_order(pair, "buy", close_short_quantity, reduce=True)
 
-        long_market_price = float(df.iloc[-1]["close"])
-        long_quantity_in_usd = usd_balance * leverage_short
-        long_quantity = float(bitget.convert_amount_to_precision(pair, float(
-            bitget.convert_amount_to_precision(pair, long_quantity_in_usd / long_market_price)
-        )))
-        exchange_long_quantity = long_quantity * long_market_price
-        print(
-            f"Place Open Long Market Order: {long_quantity} {pair[:-5]} at the price of {long_market_price}$ ~{round(exchange_long_quantity, 2)}$"
-        )
-        if production:
-            bitget.place_market_order(pair, "buy", long_quantity, reduce=False)
 
 
 else:
     print("No active position")
-    if open_long(row) and "long" in type:
+    if open_long(row) and "long" in order_type:
         long_market_price = float(df.iloc[-1]["close"])
         long_quantity_in_usd = usd_balance * leverage_long
         long_quantity = float(bitget.convert_amount_to_precision(pair, float(
@@ -217,7 +195,7 @@ else:
         if production:
             bitget.place_market_order(pair, "buy", long_quantity, reduce=False)
 
-    elif open_short(row) and "short" in type:
+    elif open_short(row) and "short" in order_type:
         short_market_price = float(df.iloc[-1]["close"])
         short_quantity_in_usd = usd_balance * leverage_short
         short_quantity = float(bitget.convert_amount_to_precision(pair, float(
