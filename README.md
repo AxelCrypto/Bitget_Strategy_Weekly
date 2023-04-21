@@ -22,7 +22,7 @@ Worst trades: -20.26 % the 2018-09-03 00:00:00+00:00 -> 2018-09-06 00:00:00+00:0
 
 ```
 
-Average time of a trade: 15 days   
+Average duration of a trade: 15 days   
 Average time between each trade: 6.5 days 
 
 #### Connected through an EC2 AWS server to my Bitget's API.   
